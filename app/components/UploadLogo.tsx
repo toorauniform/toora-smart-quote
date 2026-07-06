@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { analyzeImage, type ColorAnalysis } from "../lib/colorAnalyzer";
 
 type ImageInfo = {
   width: number;
   height: number;
   ratio: string;
   complexity: string;
+  colorAnalysis: ColorAnalysis;
 };
 
 export default function UploadLogo() {
@@ -23,16 +25,14 @@ export default function UploadLogo() {
     const img = new Image();
     img.onload = () => {
       const ratio = img.width / img.height;
-
-      let complexity = "Trung bình";
-      if (ratio > 2.5) complexity = "Logo ngang, nét dài";
-      if (ratio < 0.8) complexity = "Logo cao, chi tiết dọc";
+      const colorAnalysis = analyzeImage(img.width, img.height);
 
       setImageInfo({
         width: img.width,
         height: img.height,
         ratio: ratio.toFixed(2),
-        complexity,
+        complexity: ratio > 2.5 ? "Logo ngang, nét dài" : "Trung bình",
+        colorAnalysis,
       });
     };
 
@@ -79,9 +79,17 @@ export default function UploadLogo() {
                 Nhận xét: <b>{imageInfo.complexity}</b>
               </p>
 
-              <p className="mt-2 text-slate-500">
-                Đây là bước AI nền tảng. Sau này TOORA sẽ dùng dữ liệu này để
-                ước tính số mũi sát hơn.
+              <p>
+                Số màu AI ước tính:{" "}
+                <b>{imageInfo.colorAnalysis.colorCount} màu</b>
+              </p>
+
+              <p>
+                Màu chính: <b>{imageInfo.colorAnalysis.dominantColor}</b>
+              </p>
+
+              <p>
+                Độ phức tạp: <b>{imageInfo.colorAnalysis.complexity}</b>
               </p>
             </div>
           )}
