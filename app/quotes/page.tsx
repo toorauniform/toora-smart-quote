@@ -4,22 +4,34 @@ import { useState } from "react";
 import UploadLogo from "../components/UploadLogo";
 import { calculateQuote, vnd, type QuoteResult } from "../lib/quoteEngine";
 
-type Complexity = "low" | "medium" | "high";
+type AiInfo = {
+  colorCount: number;
+  logoCoverage: number;
+  detailScore: number;
+  shapeFactor: number;
+};
 
 export default function QuotesPage() {
   const [customer, setCustomer] = useState("");
   const [logoName, setLogoName] = useState("");
   const [width, setWidth] = useState("");
   const [qty, setQty] = useState("");
-  const [complexity, setComplexity] = useState<Complexity>("medium");
+  const [aiInfo, setAiInfo] = useState<AiInfo>({
+    colorCount: 1,
+    logoCoverage: 20,
+    detailScore: 30,
+    shapeFactor: 1,
+  });
   const [result, setResult] = useState<QuoteResult | null>(null);
 
   function calculate() {
     const quote = calculateQuote({
       widthMm: Number(width || 0),
       quantity: Number(qty || 1),
-      complexity,
-      colorCount: 1,
+      colorCount: aiInfo.colorCount,
+      logoCoverage: aiInfo.logoCoverage,
+      detailScore: aiInfo.detailScore,
+      shapeFactor: aiInfo.shapeFactor,
     });
 
     setResult(quote);
@@ -33,13 +45,22 @@ export default function QuotesPage() {
       </p>
 
       <div className="mt-8 rounded-2xl bg-white p-6 shadow">
-        <h2 className="text-xl font-bold">Smart Quote Engine v0.2</h2>
+        <h2 className="text-xl font-bold">Smart Quote Engine v0.4</h2>
         <p className="mt-2 text-slate-600">
-          Engine đã được tách riêng để sau này gắn AI và dữ liệu Wilcom.
+          Engine đang dùng màu, độ phủ, điểm chi tiết và hình dạng logo để ước tính số mũi.
         </p>
 
         <div className="mt-6">
-          <UploadLogo onAnalyze={(info) => setComplexity(info.complexity)} />
+          <UploadLogo
+            onAnalyze={(info) =>
+              setAiInfo({
+                colorCount: info.colorAnalysis.colorCount,
+                logoCoverage: info.coverage.logoCoverage,
+                detailScore: info.detailAnalysis.edgeScore,
+                shapeFactor: info.shape.factor,
+              })
+            }
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
@@ -84,34 +105,22 @@ export default function QuotesPage() {
             <h3 className="font-bold">Kết quả báo giá</h3>
 
             <div className="mt-3 grid gap-2 text-sm">
-              <p>
-                Khách hàng: <b>{customer || "Chưa nhập"}</b>
-              </p>
-              <p>
-                Logo: <b>{logoName || "Chưa nhập"}</b>
-              </p>
-              <p>
-                Độ khó AI: <b>{complexity}</b>
-              </p>
+              <p>Khách hàng: <b>{customer || "Chưa nhập"}</b></p>
+              <p>Logo: <b>{logoName || "Chưa nhập"}</b></p>
+              <p>Số màu AI: <b>{aiInfo.colorCount} màu</b></p>
+              <p>Độ phủ logo: <b>{aiInfo.logoCoverage}%</b></p>
+              <p>Điểm chi tiết: <b>{aiInfo.detailScore}/100</b></p>
+              <p>Hệ số hình dạng: <b>{aiInfo.shapeFactor}</b></p>
+              <p>Độ khó AI: <b>{result.difficulty}</b></p>
               <p>
                 Số mũi ước tính:{" "}
                 <b>{result.estimatedStitches.toLocaleString("vi-VN")} mũi</b>
               </p>
-              <p>
-                Đơn giá đề nghị: <b>{vnd(result.unitPrice)} / sản phẩm</b>
-              </p>
-              <p>
-                Doanh thu: <b>{vnd(result.revenue)}</b>
-              </p>
-              <p>
-                Chi phí trực tiếp ước tính: <b>{vnd(result.directCost)}</b>
-              </p>
-              <p>
-                Lợi nhuận gộp: <b>{vnd(result.grossProfit)}</b>
-              </p>
-              <p>
-                Biên lợi nhuận gộp: <b>{result.grossMargin}%</b>
-              </p>
+              <p>Đơn giá đề nghị: <b>{vnd(result.unitPrice)} / sản phẩm</b></p>
+              <p>Doanh thu: <b>{vnd(result.revenue)}</b></p>
+              <p>Chi phí trực tiếp ước tính: <b>{vnd(result.directCost)}</b></p>
+              <p>Lợi nhuận gộp: <b>{vnd(result.grossProfit)}</b></p>
+              <p>Biên lợi nhuận gộp: <b>{result.grossMargin}%</b></p>
             </div>
           </div>
         )}

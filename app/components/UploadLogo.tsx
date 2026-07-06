@@ -4,6 +4,7 @@ import { useState } from "react";
 import { analyzeImage, type ColorAnalysis } from "../lib/colorAnalyzer";
 import { analyzeImageCoverage, type ImageAnalysis } from "../lib/imageAnalyzer";
 import { analyzeDetail, type DetailAnalysis } from "../lib/detailAnalyzer";
+import { analyzeShape, type ShapeAnalysis } from "../lib/shapeAnalyzer";
 
 type ImageInfo = {
   width: number;
@@ -13,9 +14,14 @@ type ImageInfo = {
   colorAnalysis: ColorAnalysis;
   coverage: ImageAnalysis;
   detailAnalysis: DetailAnalysis;
+  shape: ShapeAnalysis;
 };
 
-export default function UploadLogo() {
+type Props = {
+  onAnalyze?: (info: ImageInfo) => void;
+};
+
+export default function UploadLogo({ onAnalyze }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
 
@@ -38,8 +44,9 @@ export default function UploadLogo() {
         colorAnalysis.colorCount,
         coverage.logoCoverage
       );
+      const shape = analyzeShape(img.width, img.height);
 
-      setImageInfo({
+      const info = {
         width: img.width,
         height: img.height,
         ratio: ratio.toFixed(2),
@@ -47,7 +54,11 @@ export default function UploadLogo() {
         colorAnalysis,
         coverage,
         detailAnalysis,
-      });
+        shape,
+      };
+
+      setImageInfo(info);
+      onAnalyze?.(info);
     };
 
     img.src = imageUrl;
@@ -78,50 +89,21 @@ export default function UploadLogo() {
             <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
               <h3 className="mb-2 font-bold">AI phân tích ảnh ban đầu</h3>
 
-              <p>
-                Kích thước ảnh:{" "}
-                <b>
-                  {imageInfo.width} × {imageInfo.height}px
-                </b>
-              </p>
-
-              <p>
-                Tỷ lệ ngang/cao: <b>{imageInfo.ratio}</b>
-              </p>
-
-              <p>
-                Nhận xét: <b>{imageInfo.complexity}</b>
-              </p>
-
-              <p>
-                Số màu AI ước tính:{" "}
-                <b>{imageInfo.colorAnalysis.colorCount} màu</b>
-              </p>
-
-              <p>
-                Độ phủ logo: <b>{imageInfo.coverage.logoCoverage}%</b>
-              </p>
-
-              <p>
-                Màu chính: <b>{imageInfo.colorAnalysis.dominantColor}</b>
-              </p>
-
-              <p>
-                Độ phức tạp: <b>{imageInfo.colorAnalysis.complexity}</b>
-              </p>
-
-              <p>
-                Điểm chi tiết:{" "}
-                <b>{imageInfo.detailAnalysis.edgeScore}/100</b>
-              </p>
-
-              <p>
-                Mức chi tiết: <b>{imageInfo.detailAnalysis.detail}</b>
-              </p>
+              <p>Kích thước ảnh: <b>{imageInfo.width} × {imageInfo.height}px</b></p>
+              <p>Tỷ lệ ngang/cao: <b>{imageInfo.ratio}</b></p>
+              <p>Nhận xét: <b>{imageInfo.complexity}</b></p>
+              <p>Số màu AI ước tính: <b>{imageInfo.colorAnalysis.colorCount} màu</b></p>
+              <p>Độ phủ logo: <b>{imageInfo.coverage.logoCoverage}%</b></p>
+              <p>Màu chính: <b>{imageInfo.colorAnalysis.dominantColor}</b></p>
+              <p>Độ phức tạp: <b>{imageInfo.colorAnalysis.complexity}</b></p>
+              <p>Điểm chi tiết: <b>{imageInfo.detailAnalysis.edgeScore}/100</b></p>
+              <p>Mức chi tiết: <b>{imageInfo.detailAnalysis.detail}</b></p>
+              <p>Hình dạng: <b>{imageInfo.shape.shape}</b></p>
+              <p>Hệ số hình dạng: <b>{imageInfo.shape.factor}</b></p>
             </div>
           )}
         </div>
       )}
     </div>
   );
-}
+  }
