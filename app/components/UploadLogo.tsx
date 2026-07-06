@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { analyzeImage, type ColorAnalysis } from "../lib/colorAnalyzer";
+import { analyzeImageCoverage, type ImageAnalysis } from "../lib/imageAnalyzer";
+import { analyzeDetail, type DetailAnalysis } from "../lib/detailAnalyzer";
 
 type ImageInfo = {
   width: number;
@@ -9,6 +11,8 @@ type ImageInfo = {
   ratio: string;
   complexity: string;
   colorAnalysis: ColorAnalysis;
+  coverage: ImageAnalysis;
+  detailAnalysis: DetailAnalysis;
 };
 
 export default function UploadLogo() {
@@ -23,9 +27,17 @@ export default function UploadLogo() {
     setPreview(imageUrl);
 
     const img = new Image();
+
     img.onload = () => {
       const ratio = img.width / img.height;
       const colorAnalysis = analyzeImage(img.width, img.height);
+      const coverage = analyzeImageCoverage(img.width, img.height);
+      const detailAnalysis = analyzeDetail(
+        img.width,
+        img.height,
+        colorAnalysis.colorCount,
+        coverage.logoCoverage
+      );
 
       setImageInfo({
         width: img.width,
@@ -33,6 +45,8 @@ export default function UploadLogo() {
         ratio: ratio.toFixed(2),
         complexity: ratio > 2.5 ? "Logo ngang, nét dài" : "Trung bình",
         colorAnalysis,
+        coverage,
+        detailAnalysis,
       });
     };
 
@@ -85,11 +99,24 @@ export default function UploadLogo() {
               </p>
 
               <p>
+                Độ phủ logo: <b>{imageInfo.coverage.logoCoverage}%</b>
+              </p>
+
+              <p>
                 Màu chính: <b>{imageInfo.colorAnalysis.dominantColor}</b>
               </p>
 
               <p>
                 Độ phức tạp: <b>{imageInfo.colorAnalysis.complexity}</b>
+              </p>
+
+              <p>
+                Điểm chi tiết:{" "}
+                <b>{imageInfo.detailAnalysis.edgeScore}/100</b>
+              </p>
+
+              <p>
+                Mức chi tiết: <b>{imageInfo.detailAnalysis.detail}</b>
               </p>
             </div>
           )}
