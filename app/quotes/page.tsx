@@ -9,6 +9,8 @@ type AiInfo = {
   logoCoverage: number;
   detailScore: number;
   shapeFactor: number;
+  strokeFactor: number;
+  visionScore: number;
 };
 
 export default function QuotesPage() {
@@ -21,6 +23,8 @@ export default function QuotesPage() {
     logoCoverage: 20,
     detailScore: 30,
     shapeFactor: 1,
+    strokeFactor: 1,
+    visionScore: 40,
   });
   const [result, setResult] = useState<QuoteResult | null>(null);
 
@@ -32,6 +36,8 @@ export default function QuotesPage() {
       logoCoverage: aiInfo.logoCoverage,
       detailScore: aiInfo.detailScore,
       shapeFactor: aiInfo.shapeFactor,
+      strokeFactor: aiInfo.strokeFactor,
+      visionScore: aiInfo.visionScore,
     });
 
     setResult(quote);
@@ -45,9 +51,9 @@ export default function QuotesPage() {
       </p>
 
       <div className="mt-8 rounded-2xl bg-white p-6 shadow">
-        <h2 className="text-xl font-bold">Smart Quote Engine v0.4</h2>
+        <h2 className="text-xl font-bold">Smart Quote Engine v0.8</h2>
         <p className="mt-2 text-slate-600">
-          Engine đang dùng màu, độ phủ, điểm chi tiết và hình dạng logo để ước tính số mũi.
+          Engine đang ước tính riêng Satin, Fill và Running để báo số mũi sát thực tế hơn.
         </p>
 
         <div className="mt-6">
@@ -58,6 +64,8 @@ export default function QuotesPage() {
                 logoCoverage: info.coverage.logoCoverage,
                 detailScore: info.detailAnalysis.edgeScore,
                 shapeFactor: info.shape.factor,
+                strokeFactor: info.stroke.factor,
+                visionScore: info.vision.complexity,
               })
             }
           />
@@ -111,11 +119,28 @@ export default function QuotesPage() {
               <p>Độ phủ logo: <b>{aiInfo.logoCoverage}%</b></p>
               <p>Điểm chi tiết: <b>{aiInfo.detailScore}/100</b></p>
               <p>Hệ số hình dạng: <b>{aiInfo.shapeFactor}</b></p>
+              <p>Hệ số nét: <b>{aiInfo.strokeFactor}</b></p>
+              <p>Vision Score: <b>{aiInfo.visionScore}</b></p>
               <p>Độ khó AI: <b>{result.difficulty}</b></p>
+
+              <hr className="my-2" />
+
               <p>
-                Số mũi ước tính:{" "}
+                Tổng số mũi ước tính:{" "}
                 <b>{result.estimatedStitches.toLocaleString("vi-VN")} mũi</b>
               </p>
+              <p>
+                Satin: <b>{(result.satinStitches ?? 0).toLocaleString("vi-VN")} mũi</b>
+              </p>
+              <p>
+                Fill: <b>{(result.fillStitches ?? 0).toLocaleString("vi-VN")} mũi</b>
+              </p>
+              <p>
+               Running: <b>{(result.runningStitches ?? 0).toLocaleString("vi-VN")} mũi</b>
+              </p>
+
+              <hr className="my-2" />
+
               <p>Đơn giá đề nghị: <b>{vnd(result.unitPrice)} / sản phẩm</b></p>
               <p>Doanh thu: <b>{vnd(result.revenue)}</b></p>
               <p>Chi phí trực tiếp ước tính: <b>{vnd(result.directCost)}</b></p>

@@ -6,11 +6,17 @@ export type QuoteInput = {
   colorCount?: number;
   logoCoverage?: number;
   detailScore?: number;
+  shapeFactor?: number;
+  strokeFactor?: number;
+  visionScore?: number;
 };
 
 export type QuoteResult = {
   estimatedStitches: number;
   difficulty: "low" | "medium" | "high";
+  satinStitches: number;
+  fillStitches: number;
+  runningStitches: number;
   unitPrice: number;
   revenue: number;
   directCost: number;
@@ -23,8 +29,9 @@ export function vnd(n: number) {
 }
 
 export function priceByStitches(stitches: number) {
-  if (stitches <= 2000) return 12000;
-  if (stitches <= 4000) return 18000;
+  if (stitches <= 1500) return 12000;
+  if (stitches <= 3000) return 15000;
+  if (stitches <= 5000) return 18000;
   if (stitches <= 7000) return 25000;
   if (stitches <= 10000) return 35000;
   return 50000;
@@ -35,10 +42,23 @@ export function calculateQuote(input: QuoteInput): QuoteResult {
     Number(input.widthMm || 0),
     input.colorCount || 1,
     input.logoCoverage || 20,
-    input.detailScore || 30
+    input.detailScore || 30,
+    input.shapeFactor || 1,
+    input.strokeFactor || 1,
+    input.visionScore || 40
   );
 
-  const estimatedStitches = Math.max(500, stitchResult.estimatedStitches);
+  const estimatedStitches = Math.max(700, stitchResult.estimatedStitches);
+
+  const satinStitches =
+    stitchResult.satinStitches ?? Math.round(estimatedStitches * 0.35);
+
+  const fillStitches =
+    stitchResult.fillStitches ?? Math.round(estimatedStitches * 0.5);
+
+  const runningStitches =
+    stitchResult.runningStitches ?? Math.round(estimatedStitches * 0.15);
+
   const unitPrice = priceByStitches(estimatedStitches);
   const quantity = Number(input.quantity || 1);
 
@@ -51,6 +71,9 @@ export function calculateQuote(input: QuoteInput): QuoteResult {
   return {
     estimatedStitches,
     difficulty: stitchResult.difficulty,
+    satinStitches,
+    fillStitches,
+    runningStitches,
     unitPrice,
     revenue,
     directCost,
