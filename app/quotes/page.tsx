@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import UploadLogo from "../components/UploadLogo";
-import { calculateQuote, vnd, type QuoteResult } from "../lib/quoteEngine";
+import { QuoteResultCard } from "../components/QuoteResult";
+import {
+  calculateQuote,
+  type QuoteResult,
+} from "../lib/quoteEngine";
 
 type AiInfo = {
   colorCount: number;
@@ -18,6 +22,7 @@ export default function QuotesPage() {
   const [logoName, setLogoName] = useState("");
   const [width, setWidth] = useState("");
   const [qty, setQty] = useState("");
+
   const [aiInfo, setAiInfo] = useState<AiInfo>({
     colorCount: 1,
     logoCoverage: 20,
@@ -26,6 +31,7 @@ export default function QuotesPage() {
     strokeFactor: 1,
     visionScore: 40,
   });
+
   const [result, setResult] = useState<QuoteResult | null>(null);
 
   function calculate() {
@@ -44,16 +50,25 @@ export default function QuotesPage() {
   }
 
   return (
-    <main className="text-slate-900">
-      <h1 className="text-3xl font-bold">Báo giá</h1>
+    <main className="p-8 text-slate-900">
+
+      <h1 className="text-3xl font-bold">
+        Báo giá
+      </h1>
+
       <p className="mt-2 text-slate-600">
-        Upload logo, nhập kích thước và số lượng để báo giá thêu.
+        Upload logo để AI phân tích và báo giá.
       </p>
 
       <div className="mt-8 rounded-2xl bg-white p-6 shadow">
-        <h2 className="text-xl font-bold">Smart Quote Engine v0.8</h2>
-        <p className="mt-2 text-slate-600">
-          Engine đang ước tính riêng Satin, Fill và Running để báo số mũi sát thực tế hơn.
+
+        <h2 className="text-xl font-bold">
+          Smart Quote Engine v1.0
+        </h2>
+
+        <p className="mt-2 text-slate-500">
+          AI phân tích logo, ước tính số mũi,
+          thời gian máy và giá vốn.
         </p>
 
         <div className="mt-6">
@@ -71,85 +86,57 @@ export default function QuotesPage() {
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="mt-6 grid gap-4 md:grid-cols-4">
+
           <input
-            value={customer}
-            onChange={(e) => setCustomer(e.target.value)}
             className="rounded-xl border p-3"
             placeholder="Tên khách hàng"
+            value={customer}
+            onChange={(e) => setCustomer(e.target.value)}
           />
 
           <input
-            value={logoName}
-            onChange={(e) => setLogoName(e.target.value)}
             className="rounded-xl border p-3"
             placeholder="Tên logo"
+            value={logoName}
+            onChange={(e) => setLogoName(e.target.value)}
           />
 
           <input
+            className="rounded-xl border p-3"
+            placeholder="Chiều ngang (mm)"
             value={width}
             onChange={(e) => setWidth(e.target.value)}
-            className="rounded-xl border p-3"
-            placeholder="Chiều ngang thêu mm"
           />
 
           <input
-            value={qty}
-            onChange={(e) => setQty(e.target.value)}
             className="rounded-xl border p-3"
             placeholder="Số lượng"
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
           />
+
         </div>
 
         <button
           onClick={calculate}
-          className="mt-5 rounded-xl bg-slate-900 px-5 py-3 font-bold text-white"
+          className="mt-6 rounded-xl bg-slate-900 px-6 py-3 font-bold text-white"
         >
           Ước tính báo giá
         </button>
 
         {result && (
-          <div className="mt-6 rounded-2xl bg-slate-50 p-5">
-            <h3 className="font-bold">Kết quả báo giá</h3>
-
-            <div className="mt-3 grid gap-2 text-sm">
-              <p>Khách hàng: <b>{customer || "Chưa nhập"}</b></p>
-              <p>Logo: <b>{logoName || "Chưa nhập"}</b></p>
-              <p>Số màu AI: <b>{aiInfo.colorCount} màu</b></p>
-              <p>Độ phủ logo: <b>{aiInfo.logoCoverage}%</b></p>
-              <p>Điểm chi tiết: <b>{aiInfo.detailScore}/100</b></p>
-              <p>Hệ số hình dạng: <b>{aiInfo.shapeFactor}</b></p>
-              <p>Hệ số nét: <b>{aiInfo.strokeFactor}</b></p>
-              <p>Vision Score: <b>{aiInfo.visionScore}</b></p>
-              <p>Độ khó AI: <b>{result.difficulty}</b></p>
-
-              <hr className="my-2" />
-
-              <p>
-                Tổng số mũi ước tính:{" "}
-                <b>{result.estimatedStitches.toLocaleString("vi-VN")} mũi</b>
-              </p>
-              <p>
-                Satin: <b>{(result.satinStitches ?? 0).toLocaleString("vi-VN")} mũi</b>
-              </p>
-              <p>
-                Fill: <b>{(result.fillStitches ?? 0).toLocaleString("vi-VN")} mũi</b>
-              </p>
-              <p>
-               Running: <b>{(result.runningStitches ?? 0).toLocaleString("vi-VN")} mũi</b>
-              </p>
-
-              <hr className="my-2" />
-
-              <p>Đơn giá đề nghị: <b>{vnd(result.unitPrice)} / sản phẩm</b></p>
-              <p>Doanh thu: <b>{vnd(result.revenue)}</b></p>
-              <p>Chi phí trực tiếp ước tính: <b>{vnd(result.directCost)}</b></p>
-              <p>Lợi nhuận gộp: <b>{vnd(result.grossProfit)}</b></p>
-              <p>Biên lợi nhuận gộp: <b>{result.grossMargin}%</b></p>
-            </div>
-          </div>
+          <QuoteResultCard
+            customer={customer}
+            logoName={logoName}
+            aiInfo={aiInfo}
+            result={result}
+             quantity={Number(qty || 1)}
+          />
         )}
+
       </div>
+
     </main>
   );
 }

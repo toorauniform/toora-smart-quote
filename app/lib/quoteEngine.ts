@@ -1,4 +1,6 @@
 import { estimateStitches as aiEstimateStitches } from "./stitchEstimator";
+import { estimateMachine, type MachineEstimate } from "./machineEstimator";
+import { calculateCost, type CostResult } from "./costEngine";
 
 export type QuoteInput = {
   widthMm: number;
@@ -17,6 +19,8 @@ export type QuoteResult = {
   satinStitches: number;
   fillStitches: number;
   runningStitches: number;
+  machine: MachineEstimate;
+  cost: CostResult;
   unitPrice: number;
   revenue: number;
   directCost: number;
@@ -59,11 +63,24 @@ export function calculateQuote(input: QuoteInput): QuoteResult {
   const runningStitches =
     stitchResult.runningStitches ?? Math.round(estimatedStitches * 0.15);
 
-  const unitPrice = priceByStitches(estimatedStitches);
-  const quantity = Number(input.quantity || 1);
+  const machine = estimateMachine(
+    satinStitches,
+    fillStitches,
+    runningStitches,
+    input.colorCount || 1,
+    input.detailScore || 30
+  );
 
+  const cost = calculateCost(estimatedStitches, machine.totalTime);
+
+  const unitPrice = Math.max(
+    priceByStitches(estimatedStitches),
+    cost.suggestedPrice
+  );
+
+  const quantity = Number(input.quantity || 1);
   const revenue = unitPrice * quantity;
-  const directCost = Math.round(revenue * 0.42);
+  const directCost = cost.totalCost * quantity;
   const grossProfit = revenue - directCost;
   const grossMargin =
     revenue > 0 ? Math.round((grossProfit / revenue) * 100) : 0;
@@ -74,6 +91,8 @@ export function calculateQuote(input: QuoteInput): QuoteResult {
     satinStitches,
     fillStitches,
     runningStitches,
+    machine,
+    cost,
     unitPrice,
     revenue,
     directCost,
